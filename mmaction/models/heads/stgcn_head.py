@@ -50,9 +50,12 @@ class STGCNHead(BaseHead):
     def forward(self, x):
         # global pooling
         assert self.pool is not None
+        # print('before pool--', x.shape) # 32 256 75 17
         x = self.pool(x)
+        # print('after pool--',x.shape)  # 32 256 1 1 
         x = x.view(x.shape[0] // self.num_person, self.num_person, -1, 1,
                    1).mean(dim=1)
+        # print('before fc --', x.shape) # bs 256 1 1 
 
         # prediction
         x = self.fc(x)

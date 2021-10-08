@@ -12,6 +12,8 @@ from .resnet_audio import ResNetAudio
 from .resnet_tin import ResNetTIN
 from .resnet_tsm import ResNetTSM
 from .stgcn import STGCN
+from .stgcn2 import STGCN2
+from .stgcn3 import STGCN3
 from .tanet import TANet
 from .timesformer import TimeSformer
 from .x3d import X3D
@@ -20,5 +22,5 @@ __all__ = [
     'C3D', 'ResNet', 'ResNet3d', 'ResNetTSM', 'ResNet2Plus1d',
     'ResNet3dSlowFast', 'ResNet3dSlowOnly', 'ResNet3dCSN', 'ResNetTIN', 'X3D',
     'ResNetAudio', 'ResNet3dLayer', 'MobileNetV2TSM', 'MobileNetV2', 'TANet',
-    'TimeSformer', 'STGCN'
+    'TimeSformer', 'STGCN', 'STGCN2', 'STGCN3'
 ]

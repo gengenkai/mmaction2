@@ -2,7 +2,7 @@ model = dict(
     type='SkeletonGCN',
     backbone=dict(
         # type='STGCN',
-        type='STGCN2',
+        type='STGCN3',
         in_channels=3,
         edge_importance_weighting=True,
         graph_cfg=dict(layout='coco', strategy='spatial')),
@@ -42,7 +42,7 @@ test_pipeline = [
     dict(type='ToTensor', keys=['keypoint'])
 ]
 data = dict(
-    videos_per_gpu=16,
+    videos_per_gpu=32,
     workers_per_gpu=2,
     test_dataloader=dict(videos_per_gpu=1),
     train=dict(
@@ -66,10 +66,11 @@ optimizer = dict(
     type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001, nesterov=True)
 optimizer_config = dict(grad_clip=None)
 # learning policy
-lr_config = dict(policy='step', step=[10, 50])
-total_epochs = 80
-checkpoint_config = dict(interval=5)
-evaluation = dict(interval=5, metrics=['top_k_accuracy'])
+# lr_config = dict(policy='step', step=[10, 50])
+lr_config = dict(policy='step', step=[30, 40])
+total_epochs = 60
+checkpoint_config = dict(interval=3)
+evaluation = dict(interval=3, metrics=['top_k_accuracy'])
 log_config = dict(interval=100, hooks=[dict(type='TextLoggerHook')])
 
 # runtime settings
