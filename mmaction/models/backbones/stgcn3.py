@@ -107,14 +107,14 @@ class STGCNBlock(nn.Module):
 
         self.relu = nn.ReLU(inplace=True)
 
-    def forward(self, x, adj_mat):
+    def forward(self, x):
         """Defines the computation performed at every call."""
         res = self.residual(x)
-        x, adj_mat = self.gcn(x, adj_mat)
+        x = self.gcn(x)
 
         x = self.tcn(x) + res
 
-        return self.relu(x), adj_mat
+        return self.relu(x)
 
 
 class ConvTemporalGraphical(nn.Module):
@@ -233,14 +233,10 @@ class ConvTemporalGraphical(nn.Module):
         nn.init.constant_(self.fc2c.weight, 0)
         nn.init.constant_(self.fc2c.bias, 0)
 
-
-
-
-
     def forward(self, x):
         # add A B C
         """Defines the computation performed at every call."""
-        assert adj_mat.size(0) == self.kernel_size
+        # assert adj_mat.size(0) == self.kernel_size
 
         # print('adj_mat', adj_mat.shape) # 3 17 17
         # print('x',x.shape)
@@ -330,11 +326,13 @@ class STGCN3(nn.Module):
         # self.register_buffer('A', A)
 
         # build networks
-        spatial_kernel_size = A.size(0)
+        # spatial_kernel_size = A.size(0)
+        spatial_kernel_size = 3
         temporal_kernel_size = 9
         kernel_size = (temporal_kernel_size, spatial_kernel_size)
-        self.data_bn = nn.BatchNorm1d(in_channels *
-                                      A.size(1)) if data_bn else identity
+        # self.data_bn = nn.BatchNorm1d(in_channels *
+        #                               A.size(1)) if data_bn else identity
+        self.data_bn = nn.BatchNorm1d(in_channels * 17) if data_bn else identity
 
         kwargs0 = {k: v for k, v in kwargs.items() if k != 'dropout'}
         self.st_gcn_networks = nn.ModuleList((

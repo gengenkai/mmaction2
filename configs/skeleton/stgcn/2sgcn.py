@@ -10,7 +10,8 @@ model = dict(
         type='STGCNHead',
         num_classes=60,
         in_channels=256,
-        loss_cls=dict(type='CrossEntropyLoss')),
+        loss_cls=dict(type='CrossEntropyLoss'),
+        drop_out=0.5),
     train_cfg=None,
     test_cfg=None)
 

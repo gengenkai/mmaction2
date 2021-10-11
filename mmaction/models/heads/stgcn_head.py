@@ -25,7 +25,8 @@ class STGCNHead(BaseHead):
                  loss_cls=dict(type='CrossEntropyLoss'),
                  spatial_type='avg',
                  num_person=2,
-                 init_std=0.01):
+                 init_std=0.01,
+                 drop_out=0):
         super().__init__(num_classes, in_channels, loss_cls)
 
         self.spatial_type = spatial_type
@@ -44,6 +45,11 @@ class STGCNHead(BaseHead):
 
         self.fc = nn.Conv2d(self.in_channels, self.num_classes, kernel_size=1)
 
+        if drop_out:
+            self.drop_out = nn.Dropout(drop_out)
+        else:
+            self.drop_out = lambda x: x
+
     def init_weights(self):
         normal_init(self.fc, std=self.init_std)
 
@@ -56,7 +62,8 @@ class STGCNHead(BaseHead):
         x = x.view(x.shape[0] // self.num_person, self.num_person, -1, 1,
                    1).mean(dim=1)
         # print('before fc --', x.shape) # bs 256 1 1 
-
+        
+        x = self.drop_out(x)
         # prediction
         x = self.fc(x)
         x = x.view(x.shape[0], -1)

@@ -156,7 +156,7 @@ class ConvTemporalGraphical(nn.Module):
         assert adj_mat.size(0) == self.kernel_size
 
         # print('adj_mat', adj_mat.shape) # 3 17 17
-        print('x',x.shape)
+        # print('x',x.shape)
 
         x = self.conv(x)
 

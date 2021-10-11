@@ -1,8 +1,7 @@
 model = dict(
     type='SkeletonGCN',
     backbone=dict(
-        # type='STGCN',
-        type='STGCN2',
+        type='STGCN',
         in_channels=3,
         edge_importance_weighting=True,
         graph_cfg=dict(layout='coco', strategy='spatial')),
@@ -42,7 +41,7 @@ test_pipeline = [
     dict(type='ToTensor', keys=['keypoint'])
 ]
 data = dict(
-    videos_per_gpu=16,
+    videos_per_gpu=32,
     workers_per_gpu=2,
     test_dataloader=dict(videos_per_gpu=1),
     train=dict(

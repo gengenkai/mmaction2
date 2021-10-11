@@ -10,7 +10,8 @@ model = dict(
         type='STGCNHead',
         num_classes=60,
         in_channels=256,
-        loss_cls=dict(type='CrossEntropyLoss')),
+        loss_cls=dict(type='CrossEntropyLoss'),
+        drop_out=0.5),
     train_cfg=None,
     test_cfg=None)
 
@@ -42,7 +43,7 @@ test_pipeline = [
     dict(type='ToTensor', keys=['keypoint'])
 ]
 data = dict(
-    videos_per_gpu=32,
+    videos_per_gpu=16,
     workers_per_gpu=2,
     test_dataloader=dict(videos_per_gpu=1),
     train=dict(
