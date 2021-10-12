@@ -296,13 +296,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Generate Pose Annotation for NTURGB-D raw skeleton data')
     parser.add_argument('--data_path', type=str, help='raw skeleton data path', 
-        default='/mnt/lustre/liguankai/codebase/mmaction2/data/nturgbd_raw/nturgb+d_skeletons_60/')
+        default='/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60/')
     parser.add_argument(
         '--ignored_sample_path',
         type=str,
         default='samples_with_missing_skeletons.txt')
     parser.add_argument('--out_folder', type=str, 
-        default='/mnt/lustre/liguankai/codebase/mmaction2/data/ntu')
+        default='/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_forposec3d')
     parser.add_argument('--benchmark', type=str, default='xsub')
     parser.add_argument('--part', type=str, default='train')
     # parser.add_argument('--device', type=str, default='cuda:0')
