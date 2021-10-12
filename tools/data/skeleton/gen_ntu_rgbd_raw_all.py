@@ -300,7 +300,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--ignored_sample_path',
         type=str,
-        default='samples_with_missing_skeletons.txt')
+        default='/mnt/lustre/liguankai/data/samples_with_missing_skeletons.txt')
     parser.add_argument('--out_folder', type=str, 
         default='/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_forposec3d')
     parser.add_argument('--benchmark', type=str, default='xsub')
