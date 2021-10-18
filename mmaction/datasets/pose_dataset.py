@@ -96,4 +96,9 @@ class PoseDataset(BaseDataset):
             # Sometimes we may need to load anno from the file
             if 'filename' in item:
                 item['filename'] = osp.join(self.data_prefix, item['filename'])
+            
+            # addtional
+            # if 'label' in item:
+            #     item['label'] = item['label'] - 1
+            
         return data

@@ -239,6 +239,8 @@ def gendata(data_path,
         # if filename not in ignored_samples:
         action_class = int(filename[filename.find('A') + 1:filename.find('A') +
                                     4])
+        # print('filename',filename)
+        # print('action-class---',action_class)
         subject_id = int(filename[filename.find('P') + 1:filename.find('P') +
                                 4])
         camera_id = int(filename[filename.find('C') + 1:filename.find('C') +
@@ -260,7 +262,8 @@ def gendata(data_path,
 
         if issample:
             sample_name.append(filename)
-            sample_label.append(action_class)
+            sample_label.append(action_class - 1) # 0-59 
+    
 
     fp = np.zeros((len(sample_label), 3, max_frame, num_joint, max_body_true), dtype=np.float32)
     
@@ -276,7 +279,7 @@ def gendata(data_path,
     
     for i, s in enumerate(tqdm(sample_name)):
         anno = dict()
-        anno['keypoint'] = fp[i]
+        anno['keypoint'] = fp[i]  # C T V M 
         anno['keypoint_score'] = np.ones((3, max_frame, num_joint),
                                         dtype=np.float32)
         anno['frame_dir'] = osp.splitext(s)[0]
@@ -302,7 +305,7 @@ if __name__ == '__main__':
         type=str,
         default='/mnt/lustre/liguankai/data/samples_with_missing_skeletons.txt')
     parser.add_argument('--out_folder', type=str, 
-        default='/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_forposec3d')
+        default='/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d')
     parser.add_argument('--benchmark', type=str, default='xsub')
     parser.add_argument('--part', type=str, default='train')
     # parser.add_argument('--device', type=str, default='cuda:0')
