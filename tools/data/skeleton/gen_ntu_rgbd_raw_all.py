@@ -7,10 +7,14 @@ import mmcv
 import numpy as np
 from tqdm import tqdm
 
-training_subjects = [
+training_subjects_60 = [
     1, 2, 4, 5, 8, 9, 13, 14, 15, 16, 17, 18, 19, 25, 27, 28, 31, 34, 35, 38
 ]
-training_cameras = [2, 3]
+training_cameras_60 = [2, 3]
+training_subjects_120 = [1, 2, 4, 5, 8, 9, 13, 14, 15, 16, 17, 18, 19, 25, 27, 28, 31, 34, 35, \
+                    38, 45, 46, 47, 49, 50, 52, 53, 54, 55, 56, 57, 58, 59, 70, 74, 78, \
+                    80, 81, 82, 83, 84, 85, 86, 89, 91, 92, 93, 94, 95, 97, 98, 100, 103]
+training_setups_120 = [2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]
 max_body_true = 2
 max_body_kinect = 4
 num_joint = 25

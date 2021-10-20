@@ -75,6 +75,7 @@ class STGCNBlock(nn.Module):
                  out_channels,
                  kernel_size,
                  stride=1,
+                 adj_len=17,
                  dropout=0,
                  residual=True):
         super().__init__()
@@ -84,7 +85,7 @@ class STGCNBlock(nn.Module):
         padding = ((kernel_size[0] - 1) // 2, 0)
 
         self.gcn = ConvTemporalGraphical(in_channels, out_channels,
-                                         kernel_size[1])
+                                         kernel_size[1], adj_len=adj_len)
         self.tcn = nn.Sequential(
             nn.BatchNorm2d(out_channels), nn.ReLU(inplace=True),
             nn.Conv2d(out_channels, out_channels, (kernel_size[0], 1),
@@ -159,6 +160,7 @@ class ConvTemporalGraphical(nn.Module):
                  t_stride=1,
                  t_padding=0,
                  t_dilation=1,
+                 adj_len=17,
                  bias=True):
         super().__init__()
 
@@ -172,7 +174,8 @@ class ConvTemporalGraphical(nn.Module):
         #     dilation=(t_dilation, 1),
         #     bias=bias)
 
-        self.PA = nn.Parameter(torch.FloatTensor(3, 17, 17))
+        # self.PA = nn.Parameter(torch.FloatTensor(3, 17, 17))
+        self.PA = nn.Parameter(torch.FloatTensor(3, adj_len, adj_len))
         torch.nn.init.constant_(self.PA, 1e-6)
 
         self.num_subset =3 
@@ -275,6 +278,7 @@ class STGCN2(nn.Module):
                  edge_importance_weighting=True,
                  data_bn=True,
                  pretrained=None,
+                 adj_len=17,
                  **kwargs):
         super().__init__()
 
@@ -283,6 +287,7 @@ class STGCN2(nn.Module):
         A = torch.tensor(
             self.graph.A, dtype=torch.float32, requires_grad=False)
         self.register_buffer('A', A)
+        print('A----',A.shape)
 
         # build networks
         spatial_kernel_size = A.size(0)
@@ -294,16 +299,16 @@ class STGCN2(nn.Module):
         kwargs0 = {k: v for k, v in kwargs.items() if k != 'dropout'}
         self.st_gcn_networks = nn.ModuleList((
             STGCNBlock(
-                in_channels, 64, kernel_size, 1, residual=False, **kwargs0),
-            STGCNBlock(64, 64, kernel_size, 1, **kwargs),
-            STGCNBlock(64, 64, kernel_size, 1, **kwargs),
-            STGCNBlock(64, 64, kernel_size, 1, **kwargs),
-            STGCNBlock(64, 128, kernel_size, 2, **kwargs),
-            STGCNBlock(128, 128, kernel_size, 1, **kwargs),
-            STGCNBlock(128, 128, kernel_size, 1, **kwargs),
-            STGCNBlock(128, 256, kernel_size, 2, **kwargs),
-            STGCNBlock(256, 256, kernel_size, 1, **kwargs),
-            STGCNBlock(256, 256, kernel_size, 1, **kwargs),
+                in_channels, 64, kernel_size, 1, adj_len=adj_len, residual=False, **kwargs0),
+            STGCNBlock(64, 64, kernel_size, 1, adj_len=adj_len, **kwargs),
+            STGCNBlock(64, 64, kernel_size, 1, adj_len=adj_len, **kwargs),
+            STGCNBlock(64, 64, kernel_size, 1, adj_len=adj_len, **kwargs),
+            STGCNBlock(64, 128, kernel_size, 2, adj_len=adj_len, **kwargs),
+            STGCNBlock(128, 128, kernel_size, 1, adj_len=adj_len, **kwargs),
+            STGCNBlock(128, 128, kernel_size, 1, adj_len=adj_len, **kwargs),
+            STGCNBlock(128, 256, kernel_size, 2, adj_len=adj_len, **kwargs),
+            STGCNBlock(256, 256, kernel_size, 1, adj_len=adj_len, **kwargs),
+            STGCNBlock(256, 256, kernel_size, 1, adj_len=adj_len, **kwargs),
         ))
 
         # initialize parameters for edge importance weighting
