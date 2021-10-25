@@ -287,7 +287,7 @@ class STGCN2(nn.Module):
         A = torch.tensor(
             self.graph.A, dtype=torch.float32, requires_grad=False)
         self.register_buffer('A', A)
-        print('A----',A.shape)
+        # print('A----',A.shape)
 
         # build networks
         spatial_kernel_size = A.size(0)

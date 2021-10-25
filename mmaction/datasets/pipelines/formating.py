@@ -453,18 +453,18 @@ class FormatGCNInput2:
         # keypoint_confidence = results['keypoint_score']
         # keypoint_confidence = np.expand_dims(keypoint_confidence, -1)
         # keypoint_3d = np.concatenate((keypoint, keypoint_confidence), axis=-1)
-        # keypoint_3d = np.transpose(keypoint_3d,
-        #                            (3, 1, 2, 0))  # M T V C -> C T V M
+        keypoint_3d = np.transpose(keypoint,
+                                   (3, 1, 2, 0))  # M T V C -> C T V M
 
-        # if keypoint_3d.shape[-1] < self.num_person:
-        #     pad_dim = self.num_person - keypoint_3d.shape[-1]
-        #     pad = np.zeros(
-        #         keypoint_3d.shape[:-1] + (pad_dim, ), dtype=keypoint_3d.dtype)
-        #     keypoint_3d = np.concatenate((keypoint_3d, pad), axis=-1)
-        # elif keypoint_3d.shape[-1] > self.num_person:
-        #     keypoint_3d = keypoint_3d[:, :, :, :self.num_person]
+        if keypoint_3d.shape[-1] < self.num_person:
+            pad_dim = self.num_person - keypoint_3d.shape[-1]
+            pad = np.zeros(
+                keypoint_3d.shape[:-1] + (pad_dim, ), dtype=keypoint_3d.dtype)
+            keypoint_3d = np.concatenate((keypoint_3d, pad), axis=-1)
+        elif keypoint_3d.shape[-1] > self.num_person:
+            keypoint_3d = keypoint_3d[:, :, :, :self.num_person]
 
-        # results['keypoint'] = keypoint_3d
+        results['keypoint'] = keypoint_3d
         results['input_shape'] = keypoint.shape
         return results
 

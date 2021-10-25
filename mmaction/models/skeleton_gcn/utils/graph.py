@@ -12,7 +12,8 @@ def get_hop_distance(num_node, edge, max_hop=1):
     
     transfer_mat = [
         np.linalg.matrix_power(adj_mat, d) for d in range(max_hop + 1)
-    ]
+    ] # 对邻接矩阵d次方的计算。-> 会导致有偏加权问题，即在特征聚合过程中赋予近点较大权重而忽略远点的权重
+
     # print('transfer_mat\n',transfer_mat)
     arrive_mat = (np.stack(transfer_mat) > 0)
     for d in range(max_hop, -1, -1):

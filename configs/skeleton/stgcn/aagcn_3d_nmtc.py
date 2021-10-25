@@ -1,9 +1,10 @@
 model = dict(
     type='SkeletonGCN',
     backbone=dict(
-        type='STGCN',
+        type='STGCN3',
         in_channels=3,
         edge_importance_weighting=True,
+        # adj_len=25,
         graph_cfg=dict(layout='ntu-rgb+d', strategy='spatial')),
         # graph_cfg=dict(layout='coco', strategy='spatial')),
     cls_head=dict(
@@ -15,34 +16,34 @@ model = dict(
     test_cfg=None)
 
 dataset_type = 'PoseDataset'
-ann_file_train = '/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d/xsub/train.pkl'
-ann_file_val = '/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d/xsub/val.pkl'
+ann_file_train = '/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d_nmtvc/xsub/train.pkl'
+ann_file_val = '/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d_nmtvc/xsub/val.pkl'
 train_pipeline = [
-    # dict(type='PaddingWithLoop', clip_len=300),
-    # dict(type='PoseDecode'),
-    # dict(type='FormatGCNInput', input_format='NCTVM'),
+    dict(type='PaddingWithLoop', clip_len=300),
+    dict(type='PoseDecode'),
+    dict(type='FormatGCNInput2', input_format='NCTVM'),
     # dict(type='PoseNormalize'),
     dict(type='Collect', keys=['keypoint', 'label'], meta_keys=[]),
     dict(type='ToTensor', keys=['keypoint'])
 ]
 val_pipeline = [
-    # dict(type='PaddingWithLoop', clip_len=300), # 新增frame_inds key
-    # dict(type='PoseDecode'),  # frame_inds  np.float32
-    # dict(type='FormatGCNInput', input_format='NCTVM'),
+    dict(type='PaddingWithLoop', clip_len=300), # 新增frame_inds key
+    dict(type='PoseDecode'),  # frame_inds  np.float32
+    dict(type='FormatGCNInput2', input_format='NCTVM'),
     # dict(type='PoseNormalize'),
     dict(type='Collect', keys=['keypoint', 'label'], meta_keys=[]),
     dict(type='ToTensor', keys=['keypoint'])
 ]
 test_pipeline = [
-    # dict(type='PaddingWithLoop', clip_len=300),
-    # dict(type='PoseDecode'),
-    # dict(type='FormatGCNInput', input_format='NCTVM'),
+    dict(type='PaddingWithLoop', clip_len=300),
+    dict(type='PoseDecode'),
+    dict(type='FormatGCNInput2', input_format='NCTVM'),
     # dict(type='PoseNormalize'),
     dict(type='Collect', keys=['keypoint', 'label'], meta_keys=[]),
     dict(type='ToTensor', keys=['keypoint'])
 ]
 data = dict(
-    videos_per_gpu=32,
+    videos_per_gpu=16,
     workers_per_gpu=2,
     test_dataloader=dict(videos_per_gpu=1),
     train=dict(

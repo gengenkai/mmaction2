@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import numpy as np
 import math
 from mmcv.cnn import constant_init, kaiming_init, normal_init
 from mmcv.runner import load_checkpoint
@@ -73,6 +74,7 @@ class STGCNBlock(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
+                 A,
                  kernel_size,
                  stride=1,
                  dropout=0,
@@ -83,7 +85,7 @@ class STGCNBlock(nn.Module):
         assert kernel_size[0] % 2 == 1
         padding = ((kernel_size[0] - 1) // 2, 0)
 
-        self.gcn = ConvTemporalGraphical(in_channels, out_channels,
+        self.gcn = ConvTemporalGraphical(in_channels, out_channels, A,
                                          kernel_size[1])
         self.tcn = nn.Sequential(
             nn.BatchNorm2d(out_channels), nn.ReLU(inplace=True),
@@ -154,6 +156,7 @@ class ConvTemporalGraphical(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
+                 A,
                  kernel_size,
                  t_kernel_size=1,
                  t_stride=1,
@@ -172,8 +175,9 @@ class ConvTemporalGraphical(nn.Module):
         #     dilation=(t_dilation, 1),
         #     bias=bias)
 
-        self.PA = nn.Parameter(torch.FloatTensor(3, 17, 17))
-        torch.nn.init.constant_(self.PA, 1e-6)
+        # self.PA = nn.Parameter(torch.FloatTensor(3, adj_len, adj_len))
+        # torch.nn.init.constant_(self.PA, 1e-6)
+        self.PA = nn.Parameter(torch.from_numpy(A.astype(np.float32)))
 
         self.num_subset =3 
         inter_channels = out_channels // 4
@@ -196,16 +200,7 @@ class ConvTemporalGraphical(nn.Module):
 
         self.bn = nn.BatchNorm2d(out_channels)
         self.soft = nn.Softmax(-2)
-        self.relu = nn.ReLU()
-
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                conv_init(m)
-            elif isinstance(m, nn.BatchNorm2d):
-                bn_init(m, 1)
-        bn_init(self.bn, 1e-6)
-        for i in range(self.num_subset):
-            conv_branch_init(self.conv_d[i], self.num_subset)
+        self.relu = nn.ReLU(inplace=True)
 
         # adaptive
         self.alpha = nn.Parameter(torch.zeros(1))
@@ -232,6 +227,15 @@ class ConvTemporalGraphical(nn.Module):
         nn.init.constant_(self.fc1c.bias, 0)
         nn.init.constant_(self.fc2c.weight, 0)
         nn.init.constant_(self.fc2c.bias, 0)
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                conv_init(m)
+            elif isinstance(m, nn.BatchNorm2d):
+                bn_init(m, 1)
+        bn_init(self.bn, 1e-6)
+        for i in range(self.num_subset):
+            conv_branch_init(self.conv_d[i], self.num_subset)
 
     def forward(self, x):
         # add A B C
@@ -316,14 +320,16 @@ class STGCN3(nn.Module):
                  edge_importance_weighting=True,
                  data_bn=True,
                  pretrained=None,
+                 num_joint = 25,
                  **kwargs):
         super().__init__()
 
         # load graph
-        # self.graph = Graph(**graph_cfg)
+        self.graph = Graph(**graph_cfg)
         # A = torch.tensor(
         #     self.graph.A, dtype=torch.float32, requires_grad=False)
         # self.register_buffer('A', A)
+        A = self.graph.A
 
         # build networks
         # spatial_kernel_size = A.size(0)
@@ -332,21 +338,21 @@ class STGCN3(nn.Module):
         kernel_size = (temporal_kernel_size, spatial_kernel_size)
         # self.data_bn = nn.BatchNorm1d(in_channels *
         #                               A.size(1)) if data_bn else identity
-        self.data_bn = nn.BatchNorm1d(in_channels * 17) if data_bn else identity
+        self.data_bn = nn.BatchNorm1d(in_channels *  num_joint) if data_bn else identity
 
         kwargs0 = {k: v for k, v in kwargs.items() if k != 'dropout'}
         self.st_gcn_networks = nn.ModuleList((
             STGCNBlock(
-                in_channels, 64, kernel_size, 1, residual=False, **kwargs0),
-            STGCNBlock(64, 64, kernel_size, 1, **kwargs),
-            STGCNBlock(64, 64, kernel_size, 1, **kwargs),
-            STGCNBlock(64, 64, kernel_size, 1, **kwargs),
-            STGCNBlock(64, 128, kernel_size, 2, **kwargs),
-            STGCNBlock(128, 128, kernel_size, 1, **kwargs),
-            STGCNBlock(128, 128, kernel_size, 1, **kwargs),
-            STGCNBlock(128, 256, kernel_size, 2, **kwargs),
-            STGCNBlock(256, 256, kernel_size, 1, **kwargs),
-            STGCNBlock(256, 256, kernel_size, 1, **kwargs),
+                in_channels, 64, A, kernel_size, 1, residual=False, **kwargs0),
+            STGCNBlock(64, 64, A,  kernel_size, 1, **kwargs),
+            STGCNBlock(64, 64, A,  kernel_size, 1, **kwargs),
+            STGCNBlock(64, 64, A,  kernel_size, 1, **kwargs),
+            STGCNBlock(64, 128, A, kernel_size, 2, **kwargs),
+            STGCNBlock(128, 128, A, kernel_size, 1, **kwargs),
+            STGCNBlock(128, 128, A, kernel_size, 1, **kwargs),
+            STGCNBlock(128, 256, A, kernel_size, 2, **kwargs),
+            STGCNBlock(256, 256, A, kernel_size, 1, **kwargs),
+            STGCNBlock(256, 256, A, kernel_size, 1, **kwargs),
         ))
 
         # initialize parameters for edge importance weighting
