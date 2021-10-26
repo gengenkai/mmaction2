@@ -44,15 +44,22 @@ for dataset in datasets:  # benchmark
 
         data = mmcv.load(path)
 
-        bone = np.zeros((len(data), max_body_true, max_frame, num_joint, 3),
-                  dtype=np.float32)
-
         for i, item in enumerate(data):
             keypoint = item['keypoint'] # CTVM -> MTVC
             M, T, V, C = keypoint.shape
+            bone = np.zeros((M, T, V, C, dtype=np.float32))
+
             for v1, v2 in tqdm(paris[dataset]):
                 v1 -= 1
                 v2 -= 1 
+                bone [:, :, v1, :] = keypoint[:,:,v1,:] - keypoint[:,:,v2,:]
+            item['keypoint'] =  bone 
+            results.append(item)
+
+        output_path = os.path.join('/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d_bone', dataset)
+        output_path = '{}/{}.pkl'.format(output_path, set)
+        mmcv.dump(results, output_path)
+        print(f'{dataset}--{set} finish!!!!~')
 
 
 
