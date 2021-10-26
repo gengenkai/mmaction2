@@ -1,3 +1,4 @@
+  
 import argparse
 import math
 import os
@@ -5,16 +6,19 @@ import os.path as osp
 
 import mmcv
 import numpy as np
-from tqdm import tqdm
 
 training_subjects_60 = [
     1, 2, 4, 5, 8, 9, 13, 14, 15, 16, 17, 18, 19, 25, 27, 28, 31, 34, 35, 38
 ]
 training_cameras_60 = [2, 3]
-training_subjects_120 = [1, 2, 4, 5, 8, 9, 13, 14, 15, 16, 17, 18, 19, 25, 27, 28, 31, 34, 35, \
-                    38, 45, 46, 47, 49, 50, 52, 53, 54, 55, 56, 57, 58, 59, 70, 74, 78, \
-                    80, 81, 82, 83, 84, 85, 86, 89, 91, 92, 93, 94, 95, 97, 98, 100, 103]
-training_setups_120 = [2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]
+training_subjects_120 = [
+    1, 2, 4, 5, 8, 9, 13, 14, 15, 16, 17, 18, 19, 25, 27, 28, 31, 34, 35, 38,
+    45, 46, 47, 49, 50, 52, 53, 54, 55, 56, 57, 58, 59, 70, 74, 78, 80, 81, 82,
+    83, 84, 85, 86, 89, 91, 92, 93, 94, 95, 97, 98, 100, 103
+]
+training_setups_120 = [
+    2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32
+]
 max_body_true = 2
 max_body_kinect = 4
 num_joint = 25
@@ -28,7 +32,6 @@ def unit_vector(vector):
 
 def angle_between(v1, v2):
     """Returns the angle in radians between vectors 'v1' and 'v2'::
-
             >>> angle_between((1, 0, 0), (0, 1, 0))
             1.5707963267948966
             >>> angle_between((1, 0, 0), (1, 0, 0))
@@ -64,7 +67,8 @@ def pre_normalization(data, zaxis=[0, 1], xaxis=[8, 4]):
     s = np.transpose(data, [0, 4, 2, 3, 1])  # N C T V M -> N M T V C
 
     print('pad the null frames with the previous frames')
-    for i_s, skeleton in enumerate(tqdm(s)):
+    prog_bar = mmcv.ProgressBar(len(s))
+    for i_s, skeleton in enumerate(s):
         if skeleton.sum() == 0:
             print(i_s, ' has no skeleton')
         for i_p, person in enumerate(skeleton):
@@ -85,10 +89,12 @@ def pre_normalization(data, zaxis=[0, 1], xaxis=[8, 4]):
                             [person[0:i_f] for _ in range(num)], 0)[:rest]
                         s[i_s, i_p, i_f:] = pad
                         break
+        prog_bar.update()
 
     print('sub the center joint #1 (spine joint in ntu and '
           'neck joint in kinetics)')
-    for i_s, skeleton in enumerate(tqdm(s)):
+    prog_bar = mmcv.ProgressBar(len(s))
+    for i_s, skeleton in enumerate(s):
         if skeleton.sum() == 0:
             continue
         main_body_center = skeleton[0][:, 1:2, :].copy()
@@ -97,10 +103,12 @@ def pre_normalization(data, zaxis=[0, 1], xaxis=[8, 4]):
                 continue
             mask = (person.sum(-1) != 0).reshape(T, V, 1)
             s[i_s, i_p] = (s[i_s, i_p] - main_body_center) * mask
+        prog_bar.update()
 
     print('parallel the bone between hip(jpt 0) and '
           'spine(jpt 1) of the first person to the z axis')
-    for i_s, skeleton in enumerate(tqdm(s)):
+    prog_bar = mmcv.ProgressBar(len(s))
+    for i_s, skeleton in enumerate(s):
         if skeleton.sum() == 0:
             continue
         joint_bottom = skeleton[0, 0, zaxis[0]]
@@ -116,10 +124,12 @@ def pre_normalization(data, zaxis=[0, 1], xaxis=[8, 4]):
                     continue
                 for i_j, joint in enumerate(frame):
                     s[i_s, i_p, i_f, i_j] = np.dot(matrix_z, joint)
+        prog_bar.update()
 
     print('parallel the bone between right shoulder(jpt 8) and '
           'left shoulder(jpt 4) of the first person to the x axis')
-    for i_s, skeleton in enumerate(tqdm(s)):
+    prog_bar = mmcv.ProgressBar(len(s))
+    for i_s, skeleton in enumerate(s):
         if skeleton.sum() == 0:
             continue
         joint_rshoulder = skeleton[0, 0, xaxis[0]]
@@ -135,6 +145,7 @@ def pre_normalization(data, zaxis=[0, 1], xaxis=[8, 4]):
                     continue
                 for i_j, joint in enumerate(frame):
                     s[i_s, i_p, i_f, i_j] = np.dot(matrix_x, joint)
+        prog_bar.update()
 
     data = np.transpose(s, [0, 4, 2, 3, 1])
     return data
@@ -217,6 +228,7 @@ def read_xyz(file, max_body=2, num_joint=25):
 def gendata(data_path,
             out_path,
             ignored_sample_path=None,
+            task='ntu60',
             benchmark='xsub',
             part='train',
             pre_norm=True):
@@ -231,29 +243,30 @@ def gendata(data_path,
     sample_name = []
     sample_label = []
     total_frames = []
+    results = []
 
-    results=[]
-    
-    # filename = osp.basename(data_path)
-    
     for filename in os.listdir(data_path):
         if filename in ignored_samples:
             continue
-        
-        # if filename not in ignored_samples:
+
+        setup_number = int(filename[filename.find('S') + 1:filename.find('S') +
+                                    4])
         action_class = int(filename[filename.find('A') + 1:filename.find('A') +
                                     4])
-        # print('filename',filename)
-        # print('action-class---',action_class)
         subject_id = int(filename[filename.find('P') + 1:filename.find('P') +
-                                4])
+                                  4])
         camera_id = int(filename[filename.find('C') + 1:filename.find('C') +
-                                4])
+                                 4])
 
         if benchmark == 'xsub':
-            istraining = (subject_id in training_subjects)
+            if task == 'ntu60':
+                istraining = (subject_id in training_subjects_60)
+            else:
+                istraining = (subject_id in training_subjects_120)
         elif benchmark == 'xview':
-            istraining = (camera_id in training_cameras)
+            istraining = (camera_id in training_cameras_60)
+        elif benchmark == 'xsetup':
+            istraining = (setup_number in training_setups_120)
         else:
             raise ValueError()
 
@@ -266,38 +279,42 @@ def gendata(data_path,
 
         if issample:
             sample_name.append(filename)
-            sample_label.append(action_class - 1) # 0-59 
-    
+            sample_label.append(action_class - 1)
 
-    fp = np.zeros((len(sample_label), 3, max_frame, num_joint, max_body_true), dtype=np.float32)
-    
-    for i, s in enumerate(tqdm(sample_name)):
+    fp = np.zeros((len(sample_label), 3, max_frame, num_joint, max_body_true),
+                  dtype=np.float32)
+    prog_bar = mmcv.ProgressBar(len(sample_name))
+    for i, s in enumerate(sample_name):
         data = read_xyz(
-            osp.join(data_path, s), max_body=max_body_kinect, num_joint=num_joint
-        )
-        fp[i, :, 0:data.shape[1], :, :] = data 
+            osp.join(data_path, s),
+            max_body=max_body_kinect,
+            num_joint=num_joint).astype(np.float32)
+        fp[i, :, 0:data.shape[1], :, :] = data
         total_frames.append(data.shape[1])
+        prog_bar.update()
 
     if pre_norm:
-        fp = pre_normalization(fp) 
-    
-    for i, s in enumerate(tqdm(sample_name)):
+        fp = pre_normalization(fp)
+
+    prog_bar = mmcv.ProgressBar(len(sample_name))
+    for i, s in enumerate(sample_name):
         anno = dict()
-        anno['keypoint'] = fp[i]  # C T V M 
-        anno['keypoint_score'] = np.ones((3, max_frame, num_joint),
-                                        dtype=np.float32)
+        anno['total_frames'] = total_frames[i]
+        anno['keypoint'] = fp[i, :, 0:total_frames[i], :, :].transpose(
+            3, 1, 2, 0)  # C T V M -> M T V C
         anno['frame_dir'] = osp.splitext(s)[0]
         anno['img_shape'] = (1080, 1920)
-        anno['img_shape'] = (1080, 1920)
-        anno['total_frames'] = total_frames[i]
+        anno['original_shape'] = (1080, 1920)
         anno['label'] = sample_label[i]
 
         results.append(anno)
-    
+        prog_bar.update()
+
     output_path = '{}/{}.pkl'.format(out_path, part)
     mmcv.dump(results, output_path)
     print(f'{benchmark}-{part} finish~!')
-        
+
+     
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
