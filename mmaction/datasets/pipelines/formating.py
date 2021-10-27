@@ -399,10 +399,35 @@ class FormatGCNInput:
             results (dict): The resulting dict to be modified and passed
                 to the next transform in pipeline.
         """
+        # keypoint = results['keypoint']
+        # keypoint_confidence = results['keypoint_score']
+        # keypoint_confidence = np.expand_dims(keypoint_confidence, -1)
+        # keypoint_3d = np.concatenate((keypoint, keypoint_confidence), axis=-1)
+        # keypoint_3d = np.transpose(keypoint_3d,
+        #                            (3, 1, 2, 0))  # M T V C -> C T V M
+
+        # if keypoint_3d.shape[-1] < self.num_person:
+        #     pad_dim = self.num_person - keypoint_3d.shape[-1]
+        #     pad = np.zeros(
+        #         keypoint_3d.shape[:-1] + (pad_dim, ), dtype=keypoint_3d.dtype)
+        #     keypoint_3d = np.concatenate((keypoint_3d, pad), axis=-1)
+        # elif keypoint_3d.shape[-1] > self.num_person:
+        #     keypoint_3d = keypoint_3d[:, :, :, :self.num_person]
+
+        # results['keypoint'] = keypoint_3d
+        # results['input_shape'] = keypoint_3d.shape
+        # return results
+
         keypoint = results['keypoint']
-        keypoint_confidence = results['keypoint_score']
-        keypoint_confidence = np.expand_dims(keypoint_confidence, -1)
-        keypoint_3d = np.concatenate((keypoint, keypoint_confidence), axis=-1)
+
+        if 'keypoint_score' in results:
+            keypoint_confidence = results['keypoint_score']
+            keypoint_confidence = np.expand_dims(keypoint_confidence, -1)
+            keypoint_3d = np.concatenate((keypoint, keypoint_confidence),
+                                         axis=-1)
+        else:
+            keypoint_3d = keypoint
+
         keypoint_3d = np.transpose(keypoint_3d,
                                    (3, 1, 2, 0))  # M T V C -> C T V M
 
