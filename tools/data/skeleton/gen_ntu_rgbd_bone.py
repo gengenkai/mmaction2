@@ -1,7 +1,10 @@
 
 
 from tqdm import tqdm 
-
+import mmcv 
+import os
+import os.path as osp
+import numpy as np
 
 datasets = {
     'xview', 'xsub'
@@ -39,25 +42,29 @@ for dataset in datasets:  # benchmark
 
         results = []
 
-        path = os.path.join('/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d', dataset)
+        path = os.path.join('/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d_nmtvc', dataset)
         path = '{}/{}.pkl'.format(path, set)
 
         data = mmcv.load(path)
-
+        prog_bar = mmcv.ProgressBar(len(data))
         for i, item in enumerate(data):
             keypoint = item['keypoint'] # CTVM -> MTVC
             M, T, V, C = keypoint.shape
-            bone = np.zeros((M, T, V, C, dtype=np.float32))
+            bone = np.zeros((M, T, V, C), dtype=np.float32)
 
-            for v1, v2 in tqdm(paris[dataset]):
+            for v1, v2 in paris[dataset]:
                 v1 -= 1
                 v2 -= 1 
                 bone [:, :, v1, :] = keypoint[:,:,v1,:] - keypoint[:,:,v2,:]
             item['keypoint'] =  bone 
             results.append(item)
+            prog_bar.update()
 
-        output_path = os.path.join('/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d_bone', dataset)
-        output_path = '{}/{}.pkl'.format(output_path, set)
+        out_path = os.path.join('/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d_bone', dataset)
+        if not osp.exists(out_path):
+            os.makedirs(out_path)
+        output_path = '{}/{}.pkl'.format(out_path, set)
+    
         mmcv.dump(results, output_path)
         print(f'{dataset}--{set} finish!!!!~')
 
