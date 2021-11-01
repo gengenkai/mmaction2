@@ -67,5 +67,6 @@ class STGCNHead(BaseHead):
         # prediction
         x = self.fc(x)
         x = x.view(x.shape[0], -1)
+        # print('stgcn-head',x.shape)
 
         return x
