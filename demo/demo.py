@@ -8,6 +8,10 @@ import decord
 import numpy as np
 import torch
 import webcolors
+import time
+import av
+import pims
+import mmcv
 from mmcv import Config, DictAction
 
 from mmaction.apis import inference_recognizer, init_recognizer
@@ -15,10 +19,10 @@ from mmaction.apis import inference_recognizer, init_recognizer
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MMAction2 demo')
-    parser.add_argument('config', help='test config file path')
-    parser.add_argument('checkpoint', help='checkpoint file/url')
-    parser.add_argument('video', help='video file/url or rawframes directory')
-    parser.add_argument('label', help='label file')
+    parser.add_argument('--config', help='test config file path', default='configs/recognition/tsn/tsn_r50_video_inference_1x1x3_100e_kinetics400_rgb.py')
+    parser.add_argument('--checkpoint', help='checkpoint file/url', default='https://download.openmmlab.com/mmaction/recognition/tsn/tsn_r50_1x1x3_100e_kinetics400_rgb/tsn_r50_1x1x3_100e_kinetics400_rgb_20200614-e508be42.pth')
+    parser.add_argument('--video', help='video file/url or rawframes directory', default='demo/ntu_sample.avi')
+    parser.add_argument('--label', help='label file', default='tools/data/kinetics/label_map_k400.txt')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -61,7 +65,7 @@ def parse_args():
         '--resize-algorithm',
         default='bicubic',
         help='resize algorithm applied to generate video')
-    parser.add_argument('--out-filename', default=None, help='output filename')
+    parser.add_argument('--out-filename', help='output filename', default='demo_output.mp4')
     args = parser.parse_args()
     return args
 
@@ -114,7 +118,15 @@ def get_output(video_path,
             [osp.join(video_path, x) for x in os.listdir(video_path)])
         frames = [cv2.imread(x) for x in frame_list]
     else:
-        video = decord.VideoReader(video_path)
+        start = time.time()
+        # video = decord.VideoReader(video_path)  # 1.09776 
+        # video = av.open(video_path)                # 0.13129
+        # video = pims.PyAVReaderIndexed(video_path)  # 0.472522
+        # video = pims.PyAVReaderTimed(video_path)  # 1.03219
+        video = mmcv.VideoReader(video_path)     # 0.003789186477
+        end = time.time()
+        print('time:    ',end-start)  # decord 1.09776  PyAV 0.13129 pims 0.472522
+        ss
         frames = [x.asnumpy()[..., ::-1] for x in video]
 
     if target_resolution:

@@ -25,6 +25,16 @@ PIPELINES = Registry('pipeline')
 BLENDINGS = Registry('blending')
 
 
+from torch.utils.data import DataLoader
+from prefetch_generator import BackgroundGenerator
+
+# try prefetcher 
+class DataLoaderX(DataLoader):
+
+    def __iter__(self):
+        return BackgroundGenerator(super().__iter__())
+
+
 def build_dataset(cfg, default_args=None):
     """Build a dataset from config dict.
 
@@ -114,7 +124,21 @@ def build_dataloader(dataset,
     if digit_version(torch.__version__) >= digit_version('1.8.0'):
         kwargs['persistent_workers'] = persistent_workers
 
-    data_loader = DataLoader(
+    # data_loader = DataLoader(
+    #     dataset,
+    #     batch_size=batch_size,
+    #     sampler=sampler,
+    #     num_workers=num_workers,
+    #     collate_fn=partial(collate, samples_per_gpu=videos_per_gpu),
+    #     pin_memory=pin_memory,
+    #     shuffle=shuffle,
+    #     worker_init_fn=init_fn,
+    #     drop_last=drop_last,
+    #     **kwargs)
+
+    #  try prefetcher
+    print('try prefetcher!!!\n')
+    data_loader = DataLoaderX(
         dataset,
         batch_size=batch_size,
         sampler=sampler,
