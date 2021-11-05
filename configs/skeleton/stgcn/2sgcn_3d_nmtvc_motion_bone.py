@@ -16,8 +16,8 @@ model = dict(
     test_cfg=None)
 
 dataset_type = 'PoseDataset'
-ann_file_train = '/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d_nmtvc/xsub/train.pkl'
-ann_file_val = '/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d_nmtvc/xsub/val.pkl'
+ann_file_train = '/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d_bone_motion/xsub/train.pkl'
+ann_file_val = '/mnt/lustre/liguankai/data/ntu/nturgb+d_skeletons_60_3d_bone_motion/xsub/val.pkl'
 train_pipeline = [
     dict(type='PaddingWithLoop', clip_len=300),
     dict(type='PoseDecode'),
@@ -74,7 +74,7 @@ evaluation = dict(interval=3, metrics=['top_k_accuracy'])
 log_config = dict(interval=100, hooks=[dict(type='TextLoggerHook')])
 
 # runtime settings
-dist_params = dict(backend='nccl',port='1031')
+dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/stgcn_3d/'
 load_from = None

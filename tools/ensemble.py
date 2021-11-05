@@ -3,12 +3,11 @@ import mmcv
 
 
 
-joint_pkl = '2s_joint_8664.pkl'
-bone_pkl = '2s_bone.pkl'
+joint_pkl = '2s_joint_8682.pkl'
+bone_pkl = '2s_bone_8784.pkl'
 
-alpha = 1.15
+alpha = 1.05
 
-# joint_scores = open(joint_pkl, 'rb?')
 joint_scores = mmcv.load(joint_pkl)
 joint_scores = list(joint_scores)
 print('len(joints)--', len(joint_scores))  # 16487
@@ -38,6 +37,20 @@ for i in range(l_label):
 acc = right_num / total_num 
 acc5 = right_num_5 / total_num 
 print('alpha=',alpha, acc, acc5)
+
+
+'''
+alpha= 0.8  0.8936131497543519 0.9802874992418269
+alpha= 0.9  0.8945836113301389 0.9799842299993935
+alpha= 1    0.894765572875599 0.9803481530903135
+alpha= 1.05 0.8945229574816522 0.9802268453933403
+alpha= 1.1  0.894947534421059 0.9799235761509067  !!!!
+alpha= 1.15 0.8948262267240856 0.9799235761509067
+alpha= 1.2  0.8948262267240856 0.9801055376963669
+
+'''
+
+
 
 '''
 alpha= 0.8  0.8888214957239037 0.9794383453630133

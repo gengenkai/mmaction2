@@ -8,7 +8,7 @@ from .augmentations import (AudioAmplify, CenterCrop, ColorJitter, Flip, Fuse,
 from .compose import Compose
 from .formating import (Collect, FormatAudioShape, FormatGCNInput, FormatGCNInput2, FormatShape,
                         ImageToTensor, Rename, ToDataContainer, ToTensor,
-                        Transpose)
+                        Transpose, FormatMultiInput)
 from .loading import (AudioDecode, AudioDecodeInit, AudioFeatureSelector,
                       BuildPseudoClip, DecordDecode, DecordInit,
                       DenseSampleFrames, GenerateLocalizationLabels,
@@ -37,6 +37,6 @@ __all__ = [
     'AudioDecodeInit', 'RandomScale', 'ImageDecode', 'BuildPseudoClip',
     'RandomRescale', 'PyAVDecodeMotionVector', 'Rename', 'Imgaug',
     'UniformSampleFrames', 'PoseDecode', 'LoadKineticsPose',
-    'GeneratePoseTarget', 'PIMSInit', 'PIMSDecode', 'TorchvisionTrans',
+    'GeneratePoseTarget', 'PIMSInit', 'PIMSDecode', 'TorchvisionTrans', 'FormatMultiInput',
     'PytorchVideoTrans', 'PoseNormalize', 'FormatGCNInput', 'FormatGCNInput2', 'PaddingWithLoop'
 ]

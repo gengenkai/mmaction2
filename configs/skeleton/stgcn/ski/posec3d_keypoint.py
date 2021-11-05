@@ -4,7 +4,8 @@ model = dict(
         type='ResNet3dSlowOnly',
         depth=50,
         pretrained=None,
-        in_channels=17,
+        # in_channels=17,
+        in_channels=25,
         base_channels=32,
         num_stages=3,
         out_indices=(2, ),
@@ -18,17 +19,22 @@ model = dict(
     cls_head=dict(
         type='I3DHead',
         in_channels=512,
-        num_classes=60,
+        # num_classes=60,
+        num_classes=30,
         spatial_type='avg',
         dropout_ratio=0.5),
     train_cfg=dict(),
     test_cfg=dict(average_clips='prob'))
 
 dataset_type = 'PoseDataset'
-ann_file_train = 'data/posec3d/ntu60_xsub_train.pkl'
-ann_file_val = 'data/posec3d/ntu60_xsub_val.pkl'
-left_kp = [1, 3, 5, 7, 9, 11, 13, 15]
-right_kp = [2, 4, 6, 8, 10, 12, 14, 16]
+# ann_file_train = 'data/posec3d/ntu60_xsub_train.pkl'
+# ann_file_val = 'data/posec3d/ntu60_xsub_val.pkl'
+ann_file_train = '/mnt/lustre/liguankai/data/ski/posec3d/train.pkl'
+ann_file_val = '/mnt/lustre/liguankai/data/ski/posec3d/val.pkl'
+# left_kp = [1, 3, 5, 7, 9, 11, 13, 15]
+# right_kp = [2, 4, 6, 8, 10, 12, 14, 16]
+left_kp = [15, 17, 2, 3, 4, 9, 10, 11, 24, 22, 23]
+right_kp = [16, 18, 5, 6, 7, 12, 13, 14, 21, 19, 20]
 train_pipeline = [
     dict(type='UniformSampleFrames', clip_len=48),
     dict(type='PoseDecode'),
@@ -103,8 +109,11 @@ data = dict(
         data_prefix='',
         pipeline=test_pipeline))
 # optimizer
+# optimizer = dict(
+#     type='SGD', lr=0.2, momentum=0.9,
+#     weight_decay=0.0003)  # this lr is used for 8 gpus
 optimizer = dict(
-    type='SGD', lr=0.2, momentum=0.9,
+    type='SGD', lr=0.1, momentum=0.9,
     weight_decay=0.0003)  # this lr is used for 8 gpus
 optimizer_config = dict(grad_clip=dict(max_norm=40, norm_type=2))
 # learning policy
@@ -120,7 +129,7 @@ log_config = dict(
     interval=20, hooks=[
         dict(type='TextLoggerHook'),
     ])
-dist_params = dict(backend='nccl')
+dist_params = dict(backend='nccl', port='1102')
 log_level = 'INFO'
 work_dir = './work_dirs/ski/posec3d_keypoint'
 load_from = None

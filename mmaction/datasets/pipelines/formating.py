@@ -490,10 +490,63 @@ class FormatGCNInput2:
             keypoint_3d = keypoint_3d[:, :, :, :self.num_person]
 
         results['keypoint'] = keypoint_3d
-        results['input_shape'] = keypoint.shape
+        results['input_shape'] = keypoint_3d.shape
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f"(input_format='{self.input_format}')"
         return repr_str
+
+@PIPELINES.register_module()
+class FormatMultiInput:
+
+    def __init__(self, joint=True, velocity=True, bone=True):
+        self.joint = joint  
+        self.velocity = velocity 
+        self.bone = bone
+    
+    def __call__(self, results):
+        keypoint = results['keypoint'] # C T V M
+        # C, T, V, M = keyoint.shape 
+
+        # (C, T, V, M) -> (I, C*2, T, V, M)
+        joint, velocity, bone = self.multi_input(keypoint)
+        data_new = [] 
+        if self.joint: 
+            data_new.append(joint)
+        if self.velocity:
+            data_new.append(velocity)
+        if self.bone:
+            data_new.append(bone)
+        data_new = np.stack(data_new, axis=0)
+
+        results['keypoint'] = data_new
+        results['input_shape'] = data_new.shape 
+        return results 
+    
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f"(joint={self.joint}, velocity={self.velocity}, bone={self.bone})"
+        return repr_str
+
+    def multi_input(self, data):
+        C, T, V, M = data.shape
+        joint = np.zeros((C*2, T, V, M))
+        velocity = np.zeros((C*2, T, V, M))
+        bone = np.zeros((C*2, T, V, M))
+        joint[:C,:,:,:] = data
+        for i in range(V):
+            joint[C:,:,i,:] = data[:,:,i,:] - data[:,:,1,:]
+        for i in range(T-2):
+            velocity[:C,i,:,:] = data[:,i+1,:,:] - data[:,i,:,:]
+            velocity[C:,i,:,:] = data[:,i+2,:,:] - data[:,i,:,:]
+        for i in range(len(self.conn)):
+            bone[:C,:,i,:] = data[:,:,i,:] - data[:,:,self.conn[i],:]
+        bone_length = 0
+        for i in range(C):
+            bone_length += bone[i,:,:,:] ** 2
+        bone_length = np.sqrt(bone_length) + 0.0001
+        for i in range(C):
+            bone[C+i,:,:,:] = np.arccos(bone[i,:,:,:] / bone_length) # 反余弦函数
+        return joint, velocity, bone

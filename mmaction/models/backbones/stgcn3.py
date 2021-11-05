@@ -207,7 +207,7 @@ class ConvTemporalGraphical(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
         # spatial attention 
-        num_jpts = 17 
+        num_jpts = A.shape[-1] 
         ker_jpt = num_jpts -1 if not num_jpts%2 else num_jpts 
         pad = (ker_jpt - 1)//2 
         self.conv_sa = nn.Conv1d(out_channels, 1, ker_jpt, padding=pad)
@@ -317,10 +317,8 @@ class STGCN3(nn.Module):
     def __init__(self,
                  in_channels,
                  graph_cfg,
-                 edge_importance_weighting=True,
                  data_bn=True,
                  pretrained=None,
-                 num_joint = 25,
                  **kwargs):
         super().__init__()
 
@@ -330,6 +328,8 @@ class STGCN3(nn.Module):
         #     self.graph.A, dtype=torch.float32, requires_grad=False)
         # self.register_buffer('A', A)
         A = self.graph.A
+
+        num_joint = A.shape[-1]
 
         # build networks
         # spatial_kernel_size = A.size(0)
@@ -355,15 +355,7 @@ class STGCN3(nn.Module):
             STGCNBlock(256, 256, A, kernel_size, 1, **kwargs),
         ))
 
-        # initialize parameters for edge importance weighting
-        # if edge_importance_weighting:
-        #     self.edge_importance = nn.ParameterList([
-        #         nn.Parameter(torch.ones(self.A.size()))
-        #         for i in self.st_gcn_networks
-        #     ])
-        # else:
-        #     self.edge_importance = [1 for _ in self.st_gcn_networks]
-
+    
         self.pretrained = pretrained
 
     def init_weights(self):
