@@ -9,10 +9,10 @@ data = np.load(test_data)
 n_samples = len(data)   # 628 
 print(n_samples)
 
-test_output_joint = '/mnt/lustre/liguankai/codebase/mmaction2/preds/1104pad/test_joint.pkl'
-test_output_bone = '/mnt/lustre/liguankai/codebase/mmaction2/preds/1104pad/test_bone_4gpu.pkl' 
-test_output_joint_mo = '/mnt/lustre/liguankai/codebase/mmaction2/preds/1104pad/test_motion_xy.pkl'
-test_output_bone_xy = '/mnt/lustre/liguankai/codebase/mmaction2/preds/1104pad/test_bone_xy.pkl'# better than ski_bone_test.pkl
+test_output_joint = '/mnt/lustre/liguankai/codebase/mmaction2/preds/2500_422/no_padding/joint_2s.pkl'
+test_output_bone = '/mnt/lustre/liguankai/codebase/mmaction2/preds/2500_422/no_padding/bone_2s.pkl' 
+test_output_joint_mo = '/mnt/lustre/liguankai/codebase/mmaction2/preds/2500_422/motion_xy_test.pkl'
+test_output_bone_xy = '/mnt/lustre/liguankai/codebase/mmaction2/preds/2500_422/bone_xy_test.pkl'# better than ski_bone_test.pkl
 
 
 # test_output_joint_motion = '/mnt/lustre/liguankai/codebase/mmaction2/aagcn_motion_joint.pkl'
@@ -34,15 +34,24 @@ import csv
 
 alpha=1
 
-
 values = []
 
 for i in range(len(preds_joint)):
-    pred = preds_joint_mo[i] * alpha + preds_bone[i] * alpha + preds_joint_mo[i] * alpha
+    pred = preds_joint[i]  + preds_bone[i] * alpha
     # pred = preds_joint[i] + preds_bone[i] * alpha + preds_joint_mo[i] * alpha + preds_bone_xy[i] * alpha
     # pred = preds_joint[i]  + preds_joint_mo[i] * alpha  + preds_bone_xy[i] * alpha
     cate = np.argmax(pred)
     values.append((i, cate))
+
+# pkl_file = 'ski_score.pkl'
+# pkl_file = mmcv.load(pkl_file)
+# print('len(pkl)--', len(pkl_file))
+
+# for i in range(len(pkl_file)):
+#     pred = pkl_file[i]
+#     cate = np.argmax(pred)
+#     values.append((i, cate))
+
 
 header=['sample_index','predict_category']
 with open(output_file, 'w') as fp:
@@ -53,13 +62,17 @@ with open(output_file, 'w') as fp:
 print('Finish~')
 
 
-'''                                                       no norm               padding
+
+
+'''                                                       no norm               padding           2500/422   padding_sub
 joint + bone                                                65.4 
-joint_motion + bone                                         66.4 
+joint_motion + bone                                         66.4                                                 65.46
 joint + bone_xy                                             67.5                  66.5
-joint_motion + bone_xy                                      67.68                 66.7
-joint + joint_motion + bone + bone_xy                       69.27   !!!!          68
-joint + bone + bone_xy                                      67.03                 67.03
-joint + bone + joint_motion                                 68.47                 69.9  !!!!
-joint + joint_motion + bone_xy                              68.95                 68
+joint_motion + bone_xy                                      67.68                 66.7                           67.5
+joint + joint_motion + bone + bone_xy                       69.27   !!!!          68                             68.95
+joint + bone + bone_xy                                      67.03                 67.03                          70.22  !!!
+joint + bone + joint_motion                                 68.47                 69.9  !!!!                     66.56
+joint + joint_motion + bone_xy                              68.95                 68                             68.6
 '''
+
+

@@ -505,7 +505,11 @@ class FormatMultiInput:
         self.joint = joint  
         self.velocity = velocity 
         self.bone = bone
-    
+
+
+        # for ntu rgb+d 
+        self.conn = np.array([2,2,21,3,21,5,6,7,21,9,10,11,1,13,14,15,1,17,18,19,2,23,8,25,12]) - 1
+
     def __call__(self, results):
         keypoint = results['keypoint'] # C T V M
         # C, T, V, M = keyoint.shape 

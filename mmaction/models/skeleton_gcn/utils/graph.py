@@ -66,7 +66,7 @@ class Graph:
         self.max_hop = max_hop
         self.dilation = dilation
 
-        assert layout in ['openpose', 'ntu-rgb+d', 'ntu_edge', 'coco']
+        assert layout in ['openpose', 'ntu-rgb+d', 'ntu_edge', 'coco', 'ski']
         assert strategy in ['uniform', 'distance', 'spatial']
         self.get_edge(layout)
         self.hop_dis = get_hop_distance(
@@ -120,6 +120,17 @@ class Graph:
             neighbor_link = [(i - 1, j - 1) for (i, j) in neighbor_1base]
             self.edge = self_link + neighbor_link
             self.center = 0
+        elif layout == 'ski':
+            self.num_node = 25
+            self_link = [(i, i) for i in range(self.num_node)]
+            neighbor_link = [(0, 1), (2, 1), (3, 2), (4, 3), (5, 1), (6, 5), (7, 6), (8, 1),
+                            (9, 8), (10, 9), (11, 10), (12, 8), (13, 12), (14, 13), (15, 0),
+                            (16, 0), (17, 15), (18, 16), (19, 14), (20, 19), (21, 14), (22, 11),
+                            (23, 22), (24, 11)]
+            
+            # neighbor_link = [(i - 1, j - 1) for (i, j) in neighbor_1base]
+            self.edge = self_link + neighbor_link
+            self.center = 1
         else:
             raise ValueError('Do Not Exist This Layout.')
 

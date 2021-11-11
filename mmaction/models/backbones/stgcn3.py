@@ -179,6 +179,7 @@ class ConvTemporalGraphical(nn.Module):
         # torch.nn.init.constant_(self.PA, 1e-6)
         self.PA = nn.Parameter(torch.from_numpy(A.astype(np.float32)))
 
+
         self.num_subset =3 
         inter_channels = out_channels // 4
         self.inter_c = inter_channels
@@ -255,7 +256,7 @@ class ConvTemporalGraphical(nn.Module):
             A1 = self.conv_a[i](x).permute(0, 3, 1, 2).contiguous().view(N, V, self.inter_c * T)
             A2 = self.conv_b[i](x).view(N, self.inter_c*T, V)
             A1 = self.soft(torch.matmul(A1, A2) / A1.size(-1)) # N V V
-            A1 = A1*self.alpha + A[i]
+            A1 = A1 * self.alpha + A[i]
             A2 = x.view(N, C*T, V)
             z = self.conv_d[i](torch.matmul(A2, A1).view(N, C, T, V))
             y = z + y if y is not None else z 

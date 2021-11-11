@@ -18,6 +18,7 @@ model = dict(
     test_cfg=None)
 
 dataset_type = 'PoseDataset'
+# ann_file_train = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone/train_val.pkl'
 ann_file_train = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone/train.pkl'
 ann_file_val = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone/val.pkl'
 # ann_file_val = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone/test.pkl'
@@ -70,7 +71,9 @@ optimizer = dict(
     type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001, nesterov=True)
 optimizer_config = dict(grad_clip=None)
 # learning policy
-lr_config = dict(policy='step', step=[30, 40])
+# lr_config = dict(policy='step', step=[30, 40])
+lr_config = dict(policy='step', step=[20, 50], by_epoch=True, warmup_iters=10)
+# lr_config = dict(policy='CosineAnnealing', by_epoch=True, warmup_iters=10, min_lr=0) # modify lr
 total_epochs = 80
 checkpoint_config = dict(interval=3)
 evaluation = dict(interval=3, metrics=['top_k_accuracy'])

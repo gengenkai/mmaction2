@@ -365,7 +365,7 @@ class STGCN2(nn.Module):
         #     x, _ = gcn(x, self.A * importance)
         
         for gcn in self.st_gcn_networks:
-            x, _ =gcn(x, self.A)
+            x, _ = gcn(x, self.A)
             # print('gcn--',x.shape)
         
 

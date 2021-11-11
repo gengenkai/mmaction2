@@ -12,7 +12,7 @@ for set in sets:
 
     results = []
     # path = '{}/{}.pkl'.format('/mnt/lustre/liguankai/data/ski', set) 
-    path = '{}/{}.pkl'.format('/mnt/lustre/liguankai/data/ski/2500_422/padding_sub', set) 
+    path = '{}/{}.pkl'.format('/mnt/lustre/liguankai/data/ski/2500_422/no_padding', set) 
     data = mmcv.load(path)
     print('len(data)', len(data)) # 2722
 
@@ -34,7 +34,7 @@ for set in sets:
         prog_bar.update()
     
     # out_path = '/mnt/lustre/liguankai/data/ski/motion_xy'
-    out_path = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/motion_xy'
+    out_path = '/mnt/lustre/liguankai/data/ski/2500_422/no_padding/motion_xy'
     if not os.path.exists(out_path):
         os.makedirs(out_path)
     out_path = '{}/{}.pkl'.format(out_path, set)

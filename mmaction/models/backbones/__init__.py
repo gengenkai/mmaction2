@@ -18,10 +18,12 @@ from .stgcn3 import STGCN3
 from .tanet import TANet
 from .timesformer import TimeSformer
 from .x3d import X3D
+from .efficientgcn import EfficientGCN
+from .msg3d import MSG3D
 
 __all__ = [
     'C3D', 'ResNet', 'ResNet3d', 'ResNetTSM', 'ResNet2Plus1d',
     'ResNet3dSlowFast', 'ResNet3dSlowOnly', 'ResNet3dCSN', 'ResNetTIN', 'X3D',
     'ResNetAudio', 'ResNet3dLayer', 'MobileNetV2TSM', 'MobileNetV2', 'TANet',
-    'TimeSformer', 'STGCN', 'STGCN2', 'STGCN3', 'STGCN2_2'
+    'TimeSformer', 'STGCN', 'STGCN2', 'STGCN3', 'STGCN2_2', 'EfficientGCN', 'MSG3D'
 ]

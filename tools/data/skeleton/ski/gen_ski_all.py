@@ -48,8 +48,13 @@ print('After shuffle')
 for anno in results[:15]:
     print(anno['label'])
 
+
+# # for train-val combined 
+# output_pkl = '/mnt/lustre/liguankai/data/ski/2500_422/train_val.pkl'
 # mmcv.dump(results, output_pkl)
 # print('Finish!')
+
+# ss
 
 
 

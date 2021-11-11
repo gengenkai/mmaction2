@@ -6,7 +6,6 @@ model = dict(
         edge_importance_weighting=True,
         adj_len=25,
         graph_cfg=dict(layout='ntu-rgb+d', strategy='spatial')),
-        # graph_cfg=dict(layout='coco', strategy='spatial')),
     cls_head=dict(
         type='STGCNHead',
         # num_classes=60,
@@ -18,9 +17,10 @@ model = dict(
     test_cfg=None)
 
 dataset_type = 'PoseDataset'
-ann_file_train = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/train.pkl'
-ann_file_val = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/val.pkl'
-# ann_file_val = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/test.pkl'
+ann_file_train = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/train_val.pkl'
+# ann_file_train = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/train.pkl'
+# ann_file_val = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/val.pkl'
+ann_file_val = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/test.pkl'
 train_pipeline = [
     dict(type='PaddingWithLoop', clip_len=2500),
     dict(type='PoseDecode'),
@@ -71,6 +71,9 @@ optimizer = dict(
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(policy='step', step=[30, 40])
+# lr_config = dict(policy='step', step=[20, 40])  # modify lr
+# lr_config = dict(policy='step', step=[20, 50], by_epoch=True, warmup_iters=10)
+# lr_config = dict(policy='CosineAnnealing', by_epoch=True, warmup_iters=10, min_lr=0)
 total_epochs = 80
 checkpoint_config = dict(interval=3)
 evaluation = dict(interval=3, metrics=['top_k_accuracy'])

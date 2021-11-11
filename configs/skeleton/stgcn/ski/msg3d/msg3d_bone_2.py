@@ -1,27 +1,37 @@
 model = dict(
     type='SkeletonGCN',
+    # backbone=dict(
+    #     type='STGCN2',
+    #     in_channels=3,
+    #     edge_importance_weighting=True,
+    #     adj_len=25,
+    #     graph_cfg=dict(layout='ntu-rgb+d', strategy='spatial')),
     backbone=dict(
-        type='STGCN2',
+        type='MSG3D',
         in_channels=3,
-        edge_importance_weighting=True,
-        adj_len=25,
-        graph_cfg=dict(layout='ntu-rgb+d', strategy='spatial')),
-        # graph_cfg=dict(layout='coco', strategy='spatial')),
+        num_point=25,
+        num_person=1,
+        # num_gcn_scales=13,
+        # num_g3d_scales=6,
+        num_gcn_scales=3,
+        num_g3d_scales=1,
+        data_type='ski',
+    ),
     cls_head=dict(
         type='STGCNHead',
         # num_classes=60,
         num_classes=30,
-        in_channels=256,
+        in_channels=384,
         loss_cls=dict(type='CrossEntropyLoss'),
         num_person=1),
     train_cfg=None,
     test_cfg=None)
 
 dataset_type = 'PoseDataset'
-# ann_file_train = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone_xy/train_val.pkl'
-ann_file_train = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone_xy/train.pkl'
-ann_file_val = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone_xy/val.pkl'
-# ann_file_val = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone_xy/test.pkl'
+# ann_file_train = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone/train_val.pkl'
+ann_file_train = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone/train.pkl'
+ann_file_val = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone/val.pkl'
+# ann_file_val = '/mnt/lustre/liguankai/data/ski/2500_422/padding_sub/bone/test.pkl'
 train_pipeline = [
     dict(type='PaddingWithLoop', clip_len=2500),
     dict(type='PoseDecode'),
@@ -68,18 +78,20 @@ data = dict(
 
 # optimizer
 optimizer = dict(
-    type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001, nesterov=True)
+    type='SGD', lr=0.05, momentum=0.9, weight_decay=0.0001, nesterov=True)
 optimizer_config = dict(grad_clip=None)
 # learning policy
-# lr_config = dict(policy='step', step=[30, 40])
-lr_config = dict(policy='CosineAnnealing', by_epoch=True, warmup_iters=10, min_lr=0) # modify lr
-total_epochs = 80
+lr_config = dict(policy='step', step=[30, 40])
+# lr_config = dict(policy='step', step=[20, 40])  # modify lr
+# lr_config = dict(policy='step', step=[20, 50], by_epoch=True, warmup_iters=10)
+# lr_config = dict(policy='CosineAnnealing', by_epoch=True, warmup_iters=10, min_lr=0)
+total_epochs = 70 
 checkpoint_config = dict(interval=3)
 evaluation = dict(interval=3, metrics=['top_k_accuracy'])
 log_config = dict(interval=100, hooks=[dict(type='TextLoggerHook')])
 
 # runtime settings
-dist_params = dict(backend='nccl',port='1104')
+dist_params = dict(backend='nccl',port='1108')
 log_level = 'INFO'
 work_dir = './work_dirs/stgcn_3d/'
 load_from = None
